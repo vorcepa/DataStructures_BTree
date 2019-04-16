@@ -1,11 +1,16 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class Tester_CreateBTree {
     private int totalRun = 0;
     private int passes = 0;
     private int failures = 0;
     private boolean printFailuresOnly = false;
+
+    private enum Result{
+        Pass, Fail, FileNotFound, MatchingValue, Exception
+    }
 
     public static void main(String[] args){
         Tester_CreateBTree tester = new Tester_CreateBTree();
@@ -37,9 +42,7 @@ public class Tester_CreateBTree {
     private windowScenario ShortTestWindowSize5 = () -> ShortTestWindowSize5();
 
     private void runTests(){
-        String FILE_SHORTTEST1 = "shortTest1.gbk";
         int WINDOW_SIZE = 5;
-
         String shortTest1ExpectedOutput = "gatccatccatccacccacccacccacccacccatccatccatctatctc";
         shortTest1ExpectedOutput += "tctcgctcggtcggtcggtcggtctgtctctctccctccctcccacccaa";
         shortTest1ExpectedOutput += "ccaaacaaagaaagtaagtgagtgcgtgcttgctagctagctaggtagga";
@@ -54,13 +57,13 @@ public class Tester_CreateBTree {
         shortTest1ExpectedOutput += "agctggctgactgagtgagggaggtaggtc";
 
         // test window size 5
-        testWindowSize5(ShortTestWindowSize5, "ShortTestWindowSize5", FILE_SHORTTEST1, WINDOW_SIZE, shortTest1ExpectedOutput);
+        testWindowSize5(ShortTestWindowSize5, "ShortTestWindowSize5", WINDOW_SIZE, shortTest1ExpectedOutput);
     }
 
-    private void testWindowSize5(windowScenario ws, String scenarioName, String fileName, int windowSize, String expectedOutput){
+    private void testWindowSize5(windowScenario ws, String scenarioName, int windowSize, String expectedOutput){
         System.out.printf("\nSCENARIO: %s\n\n", scenarioName);
         try {
-            printTest(scenarioName, testWindow(ws.build(), windowSize, expectedOutput));
+            printTest(scenarioName, testWindow(ws.build(), expectedOutput, Result.MatchingValue));
         }
         catch (Exception e){
             System.out.printf("***UNABLE TO RUN/COMPLETE %s***\n", scenarioName + " TESTS");
@@ -68,8 +71,24 @@ public class Tester_CreateBTree {
         }
     }
 
-    private boolean testWindow(File file, int windowSize, String expectedOutput){
-        return false;
+    private boolean testWindow(File file, String expectedOutput, Result expectedResult){
+        GeneBankCreateBTree bt = new GeneBankCreateBTree();
+        Result result;
+
+        try {
+            String retVal = bt.readFile(file);
+            if (retVal.equals(expectedOutput)){
+                result = Result.MatchingValue;
+            }
+            else{
+                result = Result.Fail;
+            }
+        }
+        catch (IOException e){
+            result = Result.Exception;
+        }
+
+        return result == expectedResult;
     }
 }
 
