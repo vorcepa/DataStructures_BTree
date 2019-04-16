@@ -1,0 +1,6 @@
+This is my attempt at the BTree project assigned by Professor Yeh at
+Boise State University, Spring 2019.  Included in a sub-directory is
+a project from a previous class where we built a Doubly-Linked List (DLL) class.
+To test test the DLL class, we were provided a test class, that we then wrote
+unit tests for.  This has been my guide for setting up a testing class for the
+BTree project.
