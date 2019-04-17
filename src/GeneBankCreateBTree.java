@@ -49,7 +49,9 @@ public class GeneBankCreateBTree {
                 sequence = currentLine.substring(i, (i + sequenceSize));
             }
 
-            retVal.append(sequence);
+            if (!sequence.contains("n")) {
+                retVal.append(sequence);
+            }
         }
 
         return retVal.toString();

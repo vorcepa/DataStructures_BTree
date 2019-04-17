@@ -29,6 +29,16 @@ public class Tester_CreateBTree {
         }
     }
 
+
+    /*
+    **********
+    **********
+
+    SCENARIO BUILDERS
+
+    **********
+    **********
+    */
     private File ShortTestWindowSize5() throws FileNotFoundException{
         File file = new File("shortTest1.gbk");
         if (!file.exists()){
@@ -38,9 +48,29 @@ public class Tester_CreateBTree {
         return file;
     }
 
-
     private windowScenario ShortTestWindowSize5 = () -> ShortTestWindowSize5();
 
+    private File brokenSequenceWindow5() throws FileNotFoundException{
+        File file = new File("brokenSequence.gbk");
+        if (!file.exists()){
+            throw new FileNotFoundException();
+        }
+
+        return file;
+    }
+
+    private windowScenario brokenSequenceWindow5 = () -> brokenSequenceWindow5();
+
+
+    /*
+    **********
+    **********
+
+    RUNTESTS()
+
+    **********
+    **********
+    */
     private void runTests(){
         int WINDOW_SIZE = 5;
         String shortTest1ExpectedOutput = "gatccatccatccacccacccacccacccacccatccatccatctatctc";
@@ -56,8 +86,16 @@ public class Tester_CreateBTree {
         shortTest1ExpectedOutput += "gcaggcaggcaggcgggcgagcgatcgatcgatcaatcagtcagccagct";
         shortTest1ExpectedOutput += "agctggctgactgagtgagggaggtaggtc";
 
+        String brokenSequenceExpectedOutput = "tccacccacccacccacccacccatccatccatctatctc";
+        brokenSequenceExpectedOutput += "tctcgctcggtcggtcccaa";
+        brokenSequenceExpectedOutput += "ccaaacaaagaaagtaagtgagtgcgtgcttgctcgctctctctgtctgc";
+        brokenSequenceExpectedOutput += "ctgcctgcctgccttccttgcttgtttgtg";
+        brokenSequenceExpectedOutput += "ttttatttaattaattaatcaatccatccctcccacccagccagc";
+        brokenSequenceExpectedOutput += "cagca";
+
         // test window size 5
         testWindowSize5(ShortTestWindowSize5, "ShortTestWindowSize5", WINDOW_SIZE, shortTest1ExpectedOutput);
+        testWindowSize5(brokenSequenceWindow5, "brokenSequenceWindow5", WINDOW_SIZE, brokenSequenceExpectedOutput);
     }
 
     private void testWindowSize5(windowScenario ws, String scenarioName, int windowSize, String expectedOutput){
