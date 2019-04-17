@@ -1,0 +1,23 @@
+This is a simple
+short test
+file for evaluating the functionality
+of the "window" for the BTree node creation
+
+ORIGIN
+        1 gatccaccca tctcggtctc ccaaagtgct
+       61 ctgccttgtg cttttaatcc cagcactttc
+//
+
+This is some filler
+text between two
+sequences
+
+ORIGIN
+     5101 attgcctccc aaaggccata tctccaatca
+     5161 acatggctgg gcgcgatggc ttgtgctttt
+//
+
+Some more filler
+text right at the
+end, because that's
+what the typical files do

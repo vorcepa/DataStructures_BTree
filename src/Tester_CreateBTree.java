@@ -61,6 +61,17 @@ public class Tester_CreateBTree {
 
     private windowScenario brokenSequenceWindow5 = () -> brokenSequenceWindow5();
 
+    private File multiSequenceWindow5() throws FileNotFoundException{
+        File file = new File("multiSequence.gbk");
+        if (!file.exists()){
+            throw new FileNotFoundException();
+        }
+
+        return file;
+    }
+
+    private windowScenario multiSequenceWindow5 = () -> multiSequenceWindow5();
+
 
     /*
     **********
@@ -86,16 +97,30 @@ public class Tester_CreateBTree {
         shortTest1ExpectedOutput += "gcaggcaggcaggcgggcgagcgatcgatcgatcaatcagtcagccagct";
         shortTest1ExpectedOutput += "agctggctgactgagtgagggaggtaggtc";
 
-        String brokenSequenceExpectedOutput = "tccacccacccacccacccacccatccatccatctatctc";
-        brokenSequenceExpectedOutput += "tctcgctcggtcggtcccaa";
-        brokenSequenceExpectedOutput += "ccaaacaaagaaagtaagtgagtgcgtgcttgctcgctctctctgtctgc";
-        brokenSequenceExpectedOutput += "ctgcctgcctgccttccttgcttgtttgtg";
-        brokenSequenceExpectedOutput += "ttttatttaattaattaatcaatccatccctcccacccagccagc";
-        brokenSequenceExpectedOutput += "cagca";
+        String brokenSequence_5_ExpectedOutput = "tccacccacccacccacccacccatccatccatctatctc";
+        brokenSequence_5_ExpectedOutput += "tctcgctcggtcggtcccaa";
+        brokenSequence_5_ExpectedOutput += "ccaaacaaagaaagtaagtgagtgcgtgcttgctcgctctctctgtctgc";
+        brokenSequence_5_ExpectedOutput += "ctgcctgcctgccttccttgcttgtttgtg";
+        brokenSequence_5_ExpectedOutput += "ttttatttaattaattaatcaatccatccctcccacccagccagc";
+        brokenSequence_5_ExpectedOutput += "cagca";
+
+        String multiSequence_5_ExpectedOutput = "gatccatccatccacccacccacccacccacccatccatccatctatctc";
+        multiSequence_5_ExpectedOutput += "tctcgctcggtcggtcggtcggtctgtctctctccctccctcccacccaa";
+        multiSequence_5_ExpectedOutput += "ccaaacaaagaaagtaagtgagtgcgtgcttgctcgctctctctgtctgc";
+        multiSequence_5_ExpectedOutput += "ctgcctgcctgccttccttgcttgtttgtgtgtgcgtgcttgcttgcttt";
+        multiSequence_5_ExpectedOutput += "cttttttttatttaattaattaatcaatccatccctcccacccagccagc";
+        multiSequence_5_ExpectedOutput += "cagcaagcacgcactcacttactttctttc";
+        multiSequence_5_ExpectedOutput += "attgcttgcctgcctgcctccctccctccctcccacccaaccaaacaaag";
+        multiSequence_5_ExpectedOutput += "aaaggaaggcaggccggccagccatccatacatatatatctatctatctc";
+        multiSequence_5_ExpectedOutput += "tctccctccatccaaccaatcaatcaatcaatcaatcaaccaacaaacat";
+        multiSequence_5_ExpectedOutput += "acatgcatggatggctggctggctggctggctgggtgggcgggcgggcgc";
+        multiSequence_5_ExpectedOutput += "gcgcgcgcgagcgatcgatggatggatggctggctggcttgcttgcttgt";
+        multiSequence_5_ExpectedOutput += "ttgtgtgtgcgtgcttgcttgctttctttt";
 
         // test window size 5
         testWindowSize5(ShortTestWindowSize5, "ShortTestWindowSize5", WINDOW_SIZE, shortTest1ExpectedOutput);
-        testWindowSize5(brokenSequenceWindow5, "brokenSequenceWindow5", WINDOW_SIZE, brokenSequenceExpectedOutput);
+        testWindowSize5(brokenSequenceWindow5, "brokenSequenceWindow5", WINDOW_SIZE, brokenSequence_5_ExpectedOutput);
+        testWindowSize5(multiSequenceWindow5, "multiSequenceWindow5", WINDOW_SIZE, multiSequence_5_ExpectedOutput);
     }
 
     private void testWindowSize5(windowScenario ws, String scenarioName, int windowSize, String expectedOutput){
