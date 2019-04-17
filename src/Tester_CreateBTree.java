@@ -63,7 +63,7 @@ public class Tester_CreateBTree {
     private void testWindowSize5(windowScenario ws, String scenarioName, int windowSize, String expectedOutput){
         System.out.printf("\nSCENARIO: %s\n\n", scenarioName);
         try {
-            printTest(scenarioName, testWindow(ws.build(), expectedOutput, Result.MatchingValue));
+            printTest(scenarioName, testWindow(ws.build(), windowSize, expectedOutput, Result.MatchingValue));
         }
         catch (Exception e){
             System.out.printf("***UNABLE TO RUN/COMPLETE %s***\n", scenarioName + " TESTS");
@@ -71,12 +71,12 @@ public class Tester_CreateBTree {
         }
     }
 
-    private boolean testWindow(File file, String expectedOutput, Result expectedResult){
+    private boolean testWindow(File file, int windowSize, String expectedOutput, Result expectedResult){
         GeneBankCreateBTree bt = new GeneBankCreateBTree();
         Result result;
 
         try {
-            String retVal = bt.readFile(file);
+            String retVal = bt.readFile(file, windowSize);
             if (retVal.equals(expectedOutput)){
                 result = Result.MatchingValue;
             }
