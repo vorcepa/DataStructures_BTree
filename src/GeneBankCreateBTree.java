@@ -58,6 +58,7 @@ public class GeneBankCreateBTree {
     }
 
     public static void main(String[] args){
-
+        TreeObject t = new TreeObject("catg");
+        System.out.println(Long.toBinaryString(t.getSequence()));
     }
 }
