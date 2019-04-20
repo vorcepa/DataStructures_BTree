@@ -6,8 +6,6 @@ public class TreeObject{
     }
 
     private long buildBinarySequence(String sequence){
-        long retval = 0;
-
         long charConversion = 0;
         long charAdd = 0;
         for (int i = 0; i < sequence.length(); i++){
