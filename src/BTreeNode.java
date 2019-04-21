@@ -22,11 +22,11 @@ public class BTreeNode{
     }
 
     public void insertKey(TreeObject key, int index){
-        if (index < 0 || index >= nodeKeys.length){
+        if (index < 0 || index > numKeys){
             throw new IndexOutOfBoundsException();
         }
 
-        for (int i = nodeKeys.length; i > index; i--){
+        for (int i = nodeKeys.length - 1; i > index; i--){
             if (nodeKeys[i] != null){
                 nodeKeys[i] = nodeKeys[i - 1];
             }
@@ -37,6 +37,10 @@ public class BTreeNode{
     }
 
     public TreeObject getKey(int index){
+        if (numKeys == 0){
+            throw new NoSuchElementException();
+        }
+
         if (index < 0 || index >= nodeKeys.length){
             throw new IndexOutOfBoundsException();
         }
@@ -46,6 +50,40 @@ public class BTreeNode{
         }
 
         return nodeKeys[index];
+    }
+
+    public TreeObject removeKey(int index){
+        if (numKeys == 0){
+            throw new NoSuchElementException();
+        }
+
+        if (index < 0 || index >= numKeys){
+            throw new IndexOutOfBoundsException();
+        }
+
+        TreeObject retVal = nodeKeys[index];
+        for (int i = index; i < nodeKeys.length - 1; i++){
+            nodeKeys[i] = nodeKeys[i + 1];
+        }
+
+        nodeKeys[nodeKeys.length - 1] = null;
+        numKeys--;
+
+        return retVal;
+    }
+
+    public String toString(){
+        StringBuilder retVal = new StringBuilder();
+        retVal.append("[");
+        for (int i = 0; i < numKeys; i++){
+            retVal.append(nodeKeys[i].getSequence());
+            retVal.append(", ");
+        }
+        retVal.deleteCharAt(retVal.lastIndexOf(","));
+        retVal.append("]");
+
+        return retVal.toString();
+
     }
 
 

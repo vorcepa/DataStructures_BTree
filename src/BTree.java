@@ -20,5 +20,23 @@ public class BTree{
         int centerKeyIndex = (nodeToSplit.getSize() / 2) + 1;
         TreeObject centerKey = nodeToSplit.getKey(centerKeyIndex);
 
+
+        BTreeNode leftChild = new BTreeNode(maxNodeSize, nodeToSplit);
+        for (int i = 0; i < centerKeyIndex; i++){
+            leftChild.insertKey(nodeToSplit.getKey(i), i);
+        }
+
+        BTreeNode rightChild = new BTreeNode(maxNodeSize, nodeToSplit);
+        for (int i = centerKeyIndex + 1; i < maxNodeSize; i++){
+            rightChild.insertKey(nodeToSplit.getKey(i), i);
+        }
+
+        for (int i = 0; i < nodeToSplit.getSize(); i++){
+            if (i != centerKeyIndex){
+                nodeToSplit.removeKey(i);
+            }
+        }
+
+        return nodeToSplit;
     }
 }

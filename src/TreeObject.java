@@ -26,7 +26,6 @@ public class TreeObject{
 
             charAdd = charAdd << 2*(sequence.length() - i - 1);
             charConversion = charConversion | charAdd;
-            System.out.println(Long.toBinaryString(charConversion));
         }
 
         return charConversion;
@@ -34,5 +33,10 @@ public class TreeObject{
 
     public long getSequence(){
         return binarySequence;
+    }
+
+
+    public boolean equals(TreeObject otherObject){
+        return this.binarySequence == otherObject.getSequence();
     }
 }
