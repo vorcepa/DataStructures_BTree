@@ -1,8 +1,10 @@
 public class TreeObject{
     private long binarySequence;
+    private int duplicates;
 
     public TreeObject(String sequence){
         binarySequence = buildBinarySequence(sequence);
+        duplicates = 0;
     }
 
     private long buildBinarySequence(String sequence){
@@ -38,5 +40,13 @@ public class TreeObject{
 
     public boolean equals(TreeObject otherObject){
         return this.binarySequence == otherObject.getSequence();
+    }
+
+    public int getDuplicates(){
+        return duplicates;
+    }
+
+    public void incrementDuplicates(){
+        duplicates++;
     }
 }

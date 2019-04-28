@@ -1,82 +1,88 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
 public class BTreeNode{
-    private TreeObject[] nodeKeys;
+    private ArrayList<TreeObject> nodeKeys;
+    private int maxSize;
     private LinkedList<BTreeNode> children;
     private BTreeNode parent;
     private boolean isLeaf;
 
-    private int numKeys;
-
     public BTreeNode(int maxSize, BTreeNode parent){
-        nodeKeys = new TreeObject[maxSize];
+        nodeKeys = new ArrayList<TreeObject>();
         this.parent = parent;
+        this.maxSize = maxSize;
         children = new LinkedList<BTreeNode>();
-        numKeys = 0;
         isLeaf = true;
     }
 
     public int getSize(){
-        return numKeys;
+        return nodeKeys.size();
     }
 
-    public void insertKey(TreeObject key, int index){
-        if (index < 0 || index > numKeys){
-            throw new IndexOutOfBoundsException();
-        }
+    public int getMaxSize(){
+        return maxSize;
+    }
 
-        for (int i = nodeKeys.length - 1; i > index; i--){
-            if (nodeKeys[i] != null){
-                nodeKeys[i] = nodeKeys[i - 1];
+    public void insertKey(TreeObject key){
+        if (nodeKeys.size() >= maxSize){
+            throw new IndexOutOfBoundsException("Node is full; node should have been split beforehand");
+        }
+        if (nodeKeys.size() == 0){
+            nodeKeys.add(key);
+        }
+        else{
+            int currentKey = 0;
+            while (currentKey < nodeKeys.size()){
+                if (key.getSequence() < nodeKeys.get(currentKey).getSequence()){
+                    break;
+                }
+                currentKey++;
+            }
+            if (isLeaf){
+                nodeKeys.add(currentKey, key);
+            }
+            else{
+                children.get(currentKey).insertKey(key);
             }
         }
 
-        nodeKeys[index] = key;
-        numKeys++;
     }
 
     public TreeObject getKey(int index){
-        if (numKeys == 0){
+        if (nodeKeys.size() == 0){
             throw new NoSuchElementException();
         }
 
-        if (index < 0 || index >= nodeKeys.length){
+        if (index < 0 || index >= nodeKeys.size()){
             throw new IndexOutOfBoundsException();
         }
 
-        if (index >= numKeys){
-            throw new NoSuchElementException();
-        }
-
-        return nodeKeys[index];
+        return nodeKeys.get(index);
     }
 
     public TreeObject removeKey(int index){
-        if (numKeys == 0){
+        if (nodeKeys.size() < 1){
             throw new NoSuchElementException();
         }
 
-        if (index < 0 || index >= numKeys){
+        if (index < 0 || index >= nodeKeys.size()){
             throw new IndexOutOfBoundsException();
         }
 
-        TreeObject retVal = nodeKeys[index];
-        for (int i = index; i < nodeKeys.length - 1; i++){
-            nodeKeys[i] = nodeKeys[i + 1];
-        }
+        return nodeKeys.remove(index);
+    }
 
-        nodeKeys[nodeKeys.length - 1] = null;
-        numKeys--;
-
-        return retVal;
+    public boolean isLeaf(){
+        return isLeaf;
     }
 
     public String toString(){
         StringBuilder retVal = new StringBuilder();
         retVal.append("[");
-        for (int i = 0; i < numKeys; i++){
-            retVal.append(nodeKeys[i].getSequence());
+        for (int i = 0; i < nodeKeys.size(); i++){
+            retVal.append(nodeKeys.get(i).getSequence());
             retVal.append(", ");
         }
         retVal.deleteCharAt(retVal.lastIndexOf(","));
@@ -86,5 +92,22 @@ public class BTreeNode{
 
     }
 
+    public LinkedList<BTreeNode> getChildren(){
+        return children;
+    }
 
+    public void setParent(BTreeNode parent){
+        this.parent = parent;
+    }
+
+    public void addChild(BTreeNode child, int index){
+        children.add(index, child);
+        if (children.size() > 0){
+            isLeaf = false;
+        }
+    }
+
+    public void setLeaf(boolean thisNodeIsALeaf){
+        isLeaf = thisNodeIsALeaf;
+    }
 }

@@ -13,6 +13,8 @@ public class Tester_CreateBTree {
     private int secPasses = 0;
     private int secFails = 0;
 
+    private int BTreeDegree = 0;
+
     private enum Result{
         Pass, Fail, FileNotFound, MatchingValue,
         Exception, NoSuchElement, UnexpectedException,
@@ -25,6 +27,18 @@ public class Tester_CreateBTree {
         Tester_CreateBTree tester = new Tester_CreateBTree();
         tester.runWindowTests();
         tester.runBTreeNodeTests();
+        tester.runBTreeTests();
+    }
+
+    private void printFinalSummary() {
+        String verdict = String.format("\nTotal Tests Run: %d,  Passed: %d (%.1f%%),  Failed: %d\n",
+                totalRun, passes, passes * 100.0 / totalRun, failures);
+        String line = "";
+        for (int i = 0; i < verdict.length(); i++) {
+            line += "-";
+        }
+        System.out.println(line);
+        System.out.println(verdict);
     }
 
     private void printTest(String testDesc, boolean result){
@@ -96,7 +110,7 @@ public class Tester_CreateBTree {
 
 
 
-        /*
+    /*
     **********
     **********
 
@@ -114,12 +128,28 @@ public class Tester_CreateBTree {
 
     private BTreeNode emptyNode2_InsertAAAA_AAAA(){
         BTreeNode btn = emptyBTreeNode2();
-        btn.insertKey(KEY_AAAA, 0);
+        btn.insertKey(KEY_AAAA);
 
         return btn;
     }
     private BTreeNodeScenario emptyNode2_InsertAAAA_AAAA = () -> emptyNode2_InsertAAAA_AAAA();
 
+        /*
+    **********
+    **********
+
+    BTREE_TEST SCENARIO BUILDERS
+
+    **********
+    **********
+    */
+
+    private static BTree emptyBTree(int degree){
+        BTree tree = new BTree(degree);
+
+        return tree;
+    }
+    private BTreeScenario emptyBTree = () -> emptyBTree(BTreeDegree);
 
     /*
     **********
@@ -189,7 +219,44 @@ public class Tester_CreateBTree {
         // Node degree 2
         testEmptyNode(emptyBTreeNode2, "emptyBTreeNode");
         testOneKeyNode(emptyNode2_InsertAAAA_AAAA, "emptyNode_InsertAAAA_AAAA", NODE_A, SEQUENCE_A);
+    }
 
+    /*
+    **********
+    **********
+
+    RUN_BTREE_TESTS()
+
+    **********
+    **********
+     */
+
+    private void runBTreeTests(){
+        BTreeDegree = 3;
+        BTreeNode oneKey = new BTreeNode(BTreeDegree*2-1, null);
+        oneKey.insertKey(new TreeObject("atcg"));
+        BTreeNode[] oneNode = {oneKey};
+        testEmptyTree(emptyBTree, "emptyBTree", oneNode);
+
+        printFinalSummary();
+    }
+
+    //////////////////////////////////
+    //XXX Tests for BTree
+    //////////////////////////////////
+    private void testEmptyTree(BTreeScenario scenario, String scenarioName, BTreeNode[] contents){
+        System.out.printf("\nSCENARIO: %s\n\n", scenarioName);
+
+        try{
+            printTest(scenarioName + "insertKey", insertKey(scenario.build(), contents, Result.MatchingValue));
+        }
+        catch (Exception e){
+            System.out.printf("***UNABLE TO RUN/COMPLETE %s***\n", scenarioName + " TESTS");
+            e.printStackTrace();
+        }
+        finally {
+            printSectionSummary();
+        }
     }
 
     //////////////////////////////////
@@ -205,21 +272,10 @@ public class Tester_CreateBTree {
      */
     private void testEmptyNode(BTreeNodeScenario scenario, String scenarioName){
         System.out.printf("\nSCENARIO: %s\n\n", scenarioName);
-        int lastAvailableNode;
-        BTreeNode finalNode = scenario.build();
-        for (int i = 0; i < finalNode.getSize(); i++){
-            if (finalNode.getKey(i) == null){
-                lastAvailableNode = i;
-                break;
-            }
-        }
-
         try {
             printTest(scenarioName + "_removeAt0", testRemoveAtIndex(scenario.build(),  null, 0, Result.NoSuchElement));
             printTest(scenarioName + "_testGetFirstItem", testGetKeyAtIndex(scenario.build(), 0, null, Result.NoSuchElement));
-            printTest(scenarioName + "_InsertKeyAt0", testInsertKeyAtIndex(scenario.build(), KEY_AAAA, 0, Result.NoException));
-            printTest(scenarioName + "_InsertKeyAt1", testInsertKeyAtIndex(scenario.build(), KEY_AAAA, 1, Result.IndexOutOfBounds));
-            printTest(scenarioName + "_InsertKeyAtNeg1", testInsertKeyAtIndex(scenario.build(), KEY_AAAA, -1, Result.IndexOutOfBounds));
+            printTest(scenarioName + "_InsertKey", testInsertKey(scenario.build(), KEY_AAAA, Result.NoException));
         }
         catch (Exception e){
             System.out.printf("***UNABLE TO RUN/COMPLETE %s***\n", scenarioName + " TESTS");
@@ -232,20 +288,11 @@ public class Tester_CreateBTree {
 
     private void testOneKeyNode(BTreeNodeScenario scenario, String scenarioName, TreeObject[] contents, long sequenceString){
         System.out.printf("\nSCENARIO: %s\n\n", scenarioName);
-        BTreeNode finalKeySlot = scenario.build();
-        int lastAvailableNode = finalKeySlot.getSize();
-
-
         try {
             printTest(scenarioName + "_removeFirstItem", testRemoveAtIndex(scenario.build(), contents[0], 0, Result.MatchingValue));
             printTest(scenarioName + "_removeAt1", testRemoveAtIndex(scenario.build(), null, 1, Result.IndexOutOfBounds));
             printTest(scenarioName + "_testGetFirstItem", testGetKeyAtIndex(scenario.build(), 0, contents[0], Result.MatchingValue));
-            printTest(scenarioName + "_InsertKeyAt0", testInsertKeyAtIndex(scenario.build(), KEY_AAAA, 0, Result.NoException));
-            printTest(scenarioName + "_InsertKeyAt1", testInsertKeyAtIndex(scenario.build(), KEY_AAAA, 1, Result.NoException));
-            printTest(scenarioName + "_InsertAtLastAvailable", testInsertKeyAtIndex(scenario.build(), KEY_AAAA, lastAvailableNode, Result.NoException));
-            printTest(scenarioName + "_InsertPastLastAvlbl", testInsertKeyAtIndex(scenario.build(), KEY_AAAA, lastAvailableNode + 1, Result.IndexOutOfBounds));
-
-            printTest(scenarioName + "_InsertKeyAtNeg1", testInsertKeyAtIndex(scenario.build(), KEY_AAAA, -1, Result.IndexOutOfBounds));
+            printTest(scenarioName + "_InsertKey", testInsertKey(scenario.build(), KEY_AAAA, Result.NoException));
         }
         catch (Exception e){
             System.out.printf("***UNABLE TO RUN/COMPLETE %s***\n", scenarioName + " TESTS");
@@ -256,7 +303,16 @@ public class Tester_CreateBTree {
         }
     }
 
-
+    ////////////////////////////
+    // XXX BTREE TEST METHODS
+    ////////////////////////////
+    private boolean insertKey(BTree tree, BTreeNode[] expectedNodeStates, Result expectedResult){
+        Result result;
+//        try{
+//            tree.
+//        }
+        return false;
+    }
 
     //////////////////////////////////
     //XXX Tests for Window to read files
@@ -353,10 +409,10 @@ public class Tester_CreateBTree {
         return result == expectedResult;
     }
 
-    private boolean testInsertKeyAtIndex(BTreeNode node, TreeObject object, int index, Result expectedResult){
+    private boolean testInsertKey(BTreeNode node, TreeObject object, Result expectedResult){
         Result result;
         try{
-            node.insertKey(object, index);
+            node.insertKey(object);
             result = Result.NoException;
         }
         catch (IndexOutOfBoundsException e){
@@ -378,4 +434,8 @@ interface windowScenario{
 
 interface BTreeNodeScenario{
     BTreeNode build();
+}
+
+interface BTreeScenario{
+    BTree build();
 }
