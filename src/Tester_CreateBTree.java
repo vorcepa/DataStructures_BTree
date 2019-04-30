@@ -145,7 +145,7 @@ public class Tester_CreateBTree {
     */
 
     private static BTree emptyBTree(int degree){
-        BTree tree = new BTree(degree);
+        BTree tree = new BTree(degree, null);
 
         return tree;
     }

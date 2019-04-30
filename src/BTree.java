@@ -9,49 +9,42 @@ public class BTree{
     }
 
     public void insert(BTree tree, TreeObject key){ // tree T, key k
-        BTreeNode subTreeRoot = root; // r = root[T]
-        if (subTreeRoot.getSize() >= maxNodeSize){ // if n[r] >= 2t - 1
-            BTreeNode parentForSplit = new BTreeNode(maxNodeSize, null); // s = allocate-node()
-            tree.root = parentForSplit; // root[T] = s
-            parentForSplit.setLeaf(false); // leaf[s] = false
-            parentForSplit.addChild(subTreeRoot, 0); // child is the old root node -- THIS MIGHT BE INCORRECT
-            splitChild(parentForSplit, 0); // B-Tree-Split-Child (s, left, right) r is split
-        }
-        else{
-            insertNonFull();
+        BTreeNode treeRoot = root;
+        if (treeRoot.getSize() >= maxNodeSize){
+            BTreeNode parentForSplit = new BTreeNode(maxNodeSize, root.getParent());
+            tree.setRoot(parentForSplit);
+            parentForSplit.setLeaf(false);
+            parentForSplit.addChild(treeRoot, 0);
+            treeRoot.setParent(parentForSplit);
+            splitChild(parentForSplit, 0, treeRoot);
         }
     }
 
     private void insertNonFull(){}
 
-    private void splitChild(BTreeNode nodeToSplit, int centerKeyIndex){
-        BTreeNode rightChild = new BTreeNode(maxNodeSize, nodeToSplit);
+    private void splitChild(BTreeNode parentNode, int childIndex, BTreeNode childToSplit){
+        BTreeNode otherChild = new BTreeNode(maxNodeSize, parentNode); // z = allocate-node()
+        otherChild.setLeaf(childToSplit.isLeaf());
 
+        int degree = (maxNodeSize + 1) / 2;
+        for (int i = degree; i < childToSplit.getSize(); i++){
+            otherChild.insertKey(childToSplit.removeKey(degree + 1));
+        }
+
+        for (int i = degree + 1; i < childToSplit.getChildren().size(); i++){
+            otherChild.addChild(childToSplit.getChildren().remove(degree + 1), i - degree + 1);
+        }
     }
-
-//    private BTreeNode nodeSplit(BTreeNode nodeToSplit){
-//        int centerKeyIndex = (nodeToSplit.getSize() / 2) + 1;
-//
-//        BTreeNode leftChild = new BTreeNode(maxNodeSize, nodeToSplit);
-//        for (int i = 0; i < centerKeyIndex; i++){
-//            leftChild.insertKey(nodeToSplit.getKey(i), i);
-//        }
-//
-//        BTreeNode rightChild = new BTreeNode(maxNodeSize, nodeToSplit);
-//        for (int i = centerKeyIndex + 1; i < maxNodeSize; i++){
-//            rightChild.insertKey(nodeToSplit.getKey(i), i);
-//        }
-//
-//        for (int i = 0; i < nodeToSplit.getSize(); i++){
-//            if (i != centerKeyIndex){
-//                nodeToSplit.removeKey(i);
-//            }
-//        }
-//
-//        return nodeToSplit;
-//    }
 
     public BTreeNode getRoot(){
         return root;
+    }
+
+    public String toStringForDebug(){
+        return root.toStringForDebug();
+    }
+
+    public void setRoot(BTreeNode newRoot){
+        this.root = newRoot;
     }
 }

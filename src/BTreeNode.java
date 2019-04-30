@@ -25,29 +25,32 @@ public class BTreeNode{
         return maxSize;
     }
 
+    public BTreeNode getChild(int index){
+        return children.get(index);
+    }
+
     public void insertKey(TreeObject key){
         if (nodeKeys.size() >= maxSize){
-            throw new IndexOutOfBoundsException("Node is full; node should have been split beforehand");
+            throw new IllegalStateException("Node is full; was split-child not called?");
         }
-        if (nodeKeys.size() == 0){
+        else if (nodeKeys.size() <= 0){
+            nodeKeys.add(key);
+            return;
+        }
+
+        int currentNode = -1;
+        for (int i = 0; i < nodeKeys.size(); i++){
+            if (key.getSequence() > nodeKeys.get(i).getSequence()){
+                currentNode = i;
+                break;
+            }
+        }
+        if (currentNode == -1){
             nodeKeys.add(key);
         }
         else{
-            int currentKey = 0;
-            while (currentKey < nodeKeys.size()){
-                if (key.getSequence() < nodeKeys.get(currentKey).getSequence()){
-                    break;
-                }
-                currentKey++;
-            }
-            if (isLeaf){
-                nodeKeys.add(currentKey, key);
-            }
-            else{
-                children.get(currentKey).insertKey(key);
-            }
+            nodeKeys.add(currentNode, key);
         }
-
     }
 
     public TreeObject getKey(int index){
@@ -62,15 +65,19 @@ public class BTreeNode{
         return nodeKeys.get(index);
     }
 
+    public int indexOfGreaterKeyInNode(TreeObject other){
+        int retVal = -1;
+        for (int i = 0; i < nodeKeys.size(); i++){
+            if (nodeKeys.get(i).getSequence() > other.getSequence()){
+                retVal = i;
+                break;
+            }
+        }
+
+        return retVal;
+    }
+
     public TreeObject removeKey(int index){
-        if (nodeKeys.size() < 1){
-            throw new NoSuchElementException();
-        }
-
-        if (index < 0 || index >= nodeKeys.size()){
-            throw new IndexOutOfBoundsException();
-        }
-
         return nodeKeys.remove(index);
     }
 
@@ -78,19 +85,19 @@ public class BTreeNode{
         return isLeaf;
     }
 
-    public String toString(){
-        StringBuilder retVal = new StringBuilder();
-        retVal.append("[");
-        for (int i = 0; i < nodeKeys.size(); i++){
-            retVal.append(nodeKeys.get(i).getSequence());
-            retVal.append(", ");
-        }
-        retVal.deleteCharAt(retVal.lastIndexOf(","));
-        retVal.append("]");
-
-        return retVal.toString();
-
-    }
+//    public String toString(){
+//        StringBuilder retVal = new StringBuilder();
+//        retVal.append("[");
+//        for (int i = 0; i < nodeKeys.size(); i++){
+//            retVal.append(nodeKeys.get(i).getSequence());
+//            retVal.append(", ");
+//        }
+//        retVal.deleteCharAt(retVal.lastIndexOf(","));
+//        retVal.append("]");
+//
+//        return retVal.toString();
+//
+//    }
 
     public LinkedList<BTreeNode> getChildren(){
         return children;
@@ -109,5 +116,38 @@ public class BTreeNode{
 
     public void setLeaf(boolean thisNodeIsALeaf){
         isLeaf = thisNodeIsALeaf;
+    }
+
+    public BTreeNode getParent(){
+        return parent;
+    }
+
+    public String toStringForDebug(){
+        StringBuilder retVal = new StringBuilder();
+        retVal.append("[");
+        for (int i = 0; i < nodeKeys.size(); i++){
+            retVal.append(nodeKeys.get(i).toString());
+            retVal.append(", ");
+        }
+
+        if (retVal.toString().length() > 1) {
+            retVal.replace(retVal.lastIndexOf(", "), retVal.lastIndexOf(", ") + 2, "");
+        }
+        retVal.append("]\n");
+
+        StringBuilder retValConcat = new StringBuilder();
+        retValConcat.append("[");
+
+        for (int i = 0; i < nodeKeys.size(); i++){
+            retValConcat.append(nodeKeys.get(i).binaryToString());
+            retValConcat.append(", ");
+        }
+        if (retValConcat.toString().length() > 1){
+            retValConcat.replace(retValConcat.lastIndexOf(", "), retValConcat.lastIndexOf(", ") + 2, "");
+        }
+        retValConcat.append("]");
+        retVal.append(retValConcat.toString());
+
+        return retVal.toString();
     }
 }

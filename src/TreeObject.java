@@ -1,8 +1,10 @@
 public class TreeObject{
     private long binarySequence;
+    private String characterSequence;
     private int duplicates;
 
     public TreeObject(String sequence){
+        characterSequence = sequence;
         binarySequence = buildBinarySequence(sequence);
         duplicates = 0;
     }
@@ -48,5 +50,23 @@ public class TreeObject{
 
     public void incrementDuplicates(){
         duplicates++;
+    }
+
+    public String toString(){
+        return characterSequence;
+    }
+
+    public String binaryToString(){
+        StringBuilder retVal = new StringBuilder();
+        for (int i = 0; i < characterSequence.length(); i++){
+            if (characterSequence.charAt(i) == 'a'){
+                retVal.append("00");
+            }
+            else{
+                break;
+            }
+        }
+
+        return retVal.toString() + Long.toBinaryString(binarySequence);
     }
 }
