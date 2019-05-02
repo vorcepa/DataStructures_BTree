@@ -29,39 +29,29 @@ public class BTreeNode{
         return children.get(index);
     }
 
-    public void insertKey(TreeObject key){
-        if (nodeKeys.size() >= maxSize){
-            throw new IllegalStateException("Node is full; was split-child not called?");
-        }
-        else if (nodeKeys.size() <= 0){
-            nodeKeys.add(key);
-            return;
-        }
-
-        int currentNode = -1;
+    public int insertKey(TreeObject key){
+        int insertLocation = -1;
         for (int i = 0; i < nodeKeys.size(); i++){
-            if (key.getSequence() > nodeKeys.get(i).getSequence()){
-                currentNode = i;
+            if (key.getSequence() < nodeKeys.get(i).getSequence()){
+                insertLocation = i;
                 break;
             }
         }
-        if (currentNode == -1){
+        if (insertLocation == -1){
             nodeKeys.add(key);
         }
-        else{
-            nodeKeys.add(currentNode, key);
+        else {
+            nodeKeys.add(insertLocation, key);
+            insertLocation = nodeKeys.size();
         }
+
+        return insertLocation;
     }
 
     public TreeObject getKey(int index){
         if (nodeKeys.size() == 0){
             throw new NoSuchElementException();
         }
-
-        if (index < 0 || index >= nodeKeys.size()){
-            throw new IndexOutOfBoundsException();
-        }
-
         return nodeKeys.get(index);
     }
 
