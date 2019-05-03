@@ -52,8 +52,9 @@ public class BTree{
         otherChild.setLeaf(childToSplit.isLeaf());
 
         int degree = (maxNodeSize + 1) / 2;
-        for (int i = degree; i < childToSplit.getSize(); i++) {
-            otherChild.insertKey(childToSplit.removeKey(degree + 1));
+        int stop = childToSplit.getSize();
+        for (int i = degree; i < stop; i++) {
+            otherChild.insertKey(childToSplit.removeKey(degree));
         }
 
         if (!childToSplit.isLeaf()) {
@@ -62,7 +63,7 @@ public class BTree{
             }
         }
 
-        parentNode.insertKey(childToSplit.getKey(degree));
+        parentNode.insertKey(childToSplit.getKey(childToSplit.getSize() - 1));
         parentNode.addChild(otherChild, childIndex + 1);
 
         // TO DO: DISK-WRITE PARENT, CHILDTOSPLIT, OTHERCHILD
