@@ -124,19 +124,19 @@ public class BTreeNode{
             retVal.replace(retVal.lastIndexOf(", "), retVal.lastIndexOf(", ") + 2, "");
         }
         retVal.append("]\n");
-
-        StringBuilder retValConcat = new StringBuilder();
-        retValConcat.append("[");
-
-        for (int i = 0; i < nodeKeys.size(); i++){
-            retValConcat.append(nodeKeys.get(i).binaryToString());
-            retValConcat.append(", ");
-        }
-        if (retValConcat.toString().length() > 1){
-            retValConcat.replace(retValConcat.lastIndexOf(", "), retValConcat.lastIndexOf(", ") + 2, "");
-        }
-        retValConcat.append("]");
-        retVal.append(retValConcat.toString());
+//
+//        StringBuilder retValConcat = new StringBuilder();
+//        retValConcat.append("[");
+//
+//        for (int i = 0; i < nodeKeys.size(); i++){
+//            retValConcat.append(nodeKeys.get(i).binaryToString());
+//            retValConcat.append(", ");
+//        }
+//        if (retValConcat.toString().length() > 1){
+//            retValConcat.replace(retValConcat.lastIndexOf(", "), retValConcat.lastIndexOf(", ") + 2, "");
+//        }
+//        retValConcat.append("]");
+//        retVal.append(retValConcat.toString());
 
         return retVal.toString();
     }

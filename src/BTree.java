@@ -1,9 +1,12 @@
 public class BTree{
     private BTreeNode root;
     private int maxNodeSize;
+    private int degree;
 
     public BTree(int degree, BTreeNode parent){
+        this.degree = degree;
         maxNodeSize = 2*degree - 1;
+
         BTreeNode treeRoot = new BTreeNode(maxNodeSize, parent);
         root = treeRoot;
     }
@@ -19,6 +22,7 @@ public class BTree{
             splitChild(parentForSplit, 0, treeRoot);
 
             insertNonFull(parentForSplit, key);
+
         }
         else{
             insertNonFull(treeRoot, key);
@@ -30,19 +34,39 @@ public class BTree{
             node.insertKey(key);
         }
         else{
-            int currentKeyIndex = node.getSize() - 1;
-            BTreeNode currentChild = node.getChild(currentKeyIndex);
-            while(currentKeyIndex >= 0 && key.getSequence() < node.getKey(currentKeyIndex).getSequence()){
-                currentChild = node.getChild(currentKeyIndex);
+            int insertLocation = node.getSize() + 1;
+            BTreeNode currentChild;
+            for (int i = node.getSize() - 1; i >= 0; i--){
+                currentChild = node.getChild(i + 1);
                 if (currentChild.getSize() >= maxNodeSize){
-                    splitChild(node, currentKeyIndex, currentChild);
-                    if (key.getSequence() > node.getKey(currentKeyIndex).getSequence()){
-                        currentKeyIndex++;
-                    }
+                    splitChild(node, i + 1, currentChild);
+                    insertLocation = node.getSize() + 1;
+                    i = node.getSize() - 1;
                 }
-                currentKeyIndex--;
+                if (key.getSequence() > node.getKey(i).getSequence()){
+                    insertLocation = i + 1;
+                    break;
+                }
             }
-            insertNonFull(currentChild, key);
+
+            BTreeNode child;
+            if (insertLocation == node.getSize() + 1){
+                child = node.getChild(0);
+                if (child.getSize() >= maxNodeSize){
+                    splitChild(node, 0, child);
+                    insertNonFull(node, key);
+                }
+                else {
+                    insertNonFull(child, key);
+                }
+            }
+            else{
+                child = node.getChild(insertLocation);
+                if (child.getSize() >= maxNodeSize){
+                    splitChild(node, insertLocation, child);
+                }
+                insertNonFull(child, key);
+            }
         }
 
     }
@@ -51,19 +75,19 @@ public class BTree{
         BTreeNode otherChild = new BTreeNode(maxNodeSize, parentNode); // z = allocate-node()
         otherChild.setLeaf(childToSplit.isLeaf());
 
-        int degree = (maxNodeSize + 1) / 2;
+        int start = degree;
         int stop = childToSplit.getSize();
-        for (int i = degree; i < stop; i++) {
-            otherChild.insertKey(childToSplit.removeKey(degree));
+        for (int i = start; i < stop; i++) {
+            otherChild.insertKey(childToSplit.removeKey(start));
         }
 
         if (!childToSplit.isLeaf()) {
-            for (int i = childToSplit.getChildren().size() - 1; i > degree - 1; i--) {
-                otherChild.addChild(childToSplit.getChildren().removeLast(), otherChild.getChildren().size());
+            for (int i = childToSplit.getChildren().size() - 1; i > start - 1; i--) {
+                otherChild.addChild(childToSplit.getChildren().removeLast(), 0);
             }
         }
 
-        parentNode.insertKey(childToSplit.getKey(childToSplit.getSize() - 1));
+        parentNode.insertKey(childToSplit.removeKey(childToSplit.getSize() - 1));
         parentNode.addChild(otherChild, childIndex + 1);
 
         // TO DO: DISK-WRITE PARENT, CHILDTOSPLIT, OTHERCHILD
@@ -74,7 +98,17 @@ public class BTree{
     }
 
     public String toStringForDebug(){
-        return root.toStringForDebug();
+        StringBuilder retVal = new StringBuilder();
+        retVal.append(root.toStringForDebug() + "\n");
+        for (int i = 0; i < root.getChildren().size(); i++){
+            retVal.append(root.getChildren().get(i).toStringForDebug());
+            retVal.append("\n");
+            for (int j = 0; j < root.getChildren().get(i).getChildren().size(); j++){
+                retVal.append(root.getChildren().get(i).getChildren().get(j).toStringForDebug());
+                retVal.append("\n");
+            }
+        }
+        return retVal.toString();
     }
 
     public void setRoot(BTreeNode newRoot){
