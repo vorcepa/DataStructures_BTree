@@ -7,14 +7,14 @@ public class BTree{
         this.degree = degree;
         maxNodeSize = 2*degree - 1;
 
-        BTreeNode treeRoot = new BTreeNode(maxNodeSize, parent);
+        BTreeNode treeRoot = new BTreeNode(parent);
         root = treeRoot;
     }
 
     public void insert(BTree tree, TreeObject key){ // tree T, key k
         BTreeNode treeRoot = root;
         if (treeRoot.getSize() >= maxNodeSize){
-            BTreeNode parentForSplit = new BTreeNode(maxNodeSize, root.getParent());
+            BTreeNode parentForSplit = new BTreeNode(root.getParent());
             tree.setRoot(parentForSplit);
             parentForSplit.setLeaf(false);
             parentForSplit.addChild(treeRoot, 0);
@@ -87,7 +87,7 @@ public class BTree{
     }
 
     private void splitChild(BTreeNode parentNode, int childIndex, BTreeNode childToSplit) {
-        BTreeNode otherChild = new BTreeNode(maxNodeSize, parentNode); // z = allocate-node()
+        BTreeNode otherChild = new BTreeNode(parentNode); // z = allocate-node()
         otherChild.setLeaf(childToSplit.isLeaf());
 
         int start = degree;

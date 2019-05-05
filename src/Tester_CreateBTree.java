@@ -120,7 +120,7 @@ public class Tester_CreateBTree {
     **********
     */
     private BTreeNode emptyBTreeNode2(){
-        BTreeNode btn = new BTreeNode(3, null);
+        BTreeNode btn = new BTreeNode(null);
 
         return btn;
     }
@@ -233,7 +233,7 @@ public class Tester_CreateBTree {
 
     private void runBTreeTests(){
         BTreeDegree = 3;
-        BTreeNode oneKey = new BTreeNode(BTreeDegree*2-1, null);
+        BTreeNode oneKey = new BTreeNode(null);
         oneKey.insertKey(new TreeObject("atcg"));
         BTreeNode[] oneNode = {oneKey};
         testEmptyTree(emptyBTree, "emptyBTree", oneNode);
@@ -336,7 +336,7 @@ public class Tester_CreateBTree {
         Result result;
 
         try {
-            String retVal = bt.readFile(file, windowSize);
+            String retVal = bt.readGeneBankFile(file, windowSize);
             if (retVal.equals(expectedOutput)){
                 result = Result.MatchingValue;
             }

@@ -1,7 +1,7 @@
 import java.io.*;
 
 public class GeneBankCreateBTree {
-    public String readFile(File file, int sequenceSize) throws IOException {
+    public String readGeneBankFile(File file, int sequenceSize) throws IOException {
         boolean readingDNAChars = false;
 
         StringBuilder retVal = new StringBuilder();
