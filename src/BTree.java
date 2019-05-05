@@ -20,6 +20,9 @@ public class BTree{
             parentForSplit.addChild(treeRoot, 0);
             treeRoot.setParent(parentForSplit);
             splitChild(parentForSplit, 0, treeRoot);
+            if (parentForSplit.checkForDuplicates(key)){
+                return;
+            }
 
             insertNonFull(parentForSplit, key);
 
@@ -30,6 +33,9 @@ public class BTree{
     }
 
     private void insertNonFull(BTreeNode node, TreeObject key){
+        if (node.checkForDuplicates(key)){
+            return;
+        }
         if (node.isLeaf()){
             node.insertKey(key);
         }
@@ -40,6 +46,9 @@ public class BTree{
                 currentChild = node.getChild(i + 1);
                 if (currentChild.getSize() >= maxNodeSize){
                     splitChild(node, i + 1, currentChild);
+                    if (node.checkForDuplicates(key)){
+                        return;
+                    }
                     insertLocation = node.getSize() + 1;
                     i = node.getSize() - 1;
                 }
@@ -54,6 +63,9 @@ public class BTree{
                 child = node.getChild(0);
                 if (child.getSize() >= maxNodeSize){
                     splitChild(node, 0, child);
+                    if (node.checkForDuplicates(key)){
+                        return;
+                    }
                     insertNonFull(node, key);
                 }
                 else {
@@ -64,6 +76,9 @@ public class BTree{
                 child = node.getChild(insertLocation);
                 if (child.getSize() >= maxNodeSize){
                     splitChild(node, insertLocation, child);
+                    if (node.checkForDuplicates(key)){
+                        return;
+                    }
                 }
                 insertNonFull(child, key);
             }

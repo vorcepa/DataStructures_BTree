@@ -31,7 +31,13 @@ public class BTreeNode{
 
     public int insertKey(TreeObject key){
         int insertLocation = -1;
+        TreeObject currentKey;
         for (int i = 0; i < nodeKeys.size(); i++){
+            currentKey = nodeKeys.get(i);
+            if (key.getSequence() == currentKey.getSequence()){
+                currentKey.incrementDuplicates();
+                return -1;
+            }
             if (key.getSequence() < nodeKeys.get(i).getSequence()){
                 insertLocation = i;
                 break;
@@ -139,5 +145,18 @@ public class BTreeNode{
 //        retVal.append(retValConcat.toString());
 
         return retVal.toString();
+    }
+
+    public boolean checkForDuplicates(TreeObject key){
+        boolean retVal = false;
+        TreeObject currentKey;
+        for (int i = 0; i < nodeKeys.size(); i++){
+            currentKey = nodeKeys.get(i);
+            if (key.getSequence() == currentKey.getSequence()){
+                retVal = true;
+                currentKey.incrementDuplicates();
+            }
+        }
+        return retVal;
     }
 }
