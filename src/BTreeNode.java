@@ -1,34 +1,32 @@
-import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
 public class BTreeNode{
     private TreeObject[] nodeKeys;
-    private LinkedList<BTreeNode> children;
-    private BTreeNode parent;
+    private long[] childrenOffsets;
+    private long parentOffset;
 
     // META DATA
     private final long offset;
     private int numKeys;
     private int numChildren;
-    private int parentOffset;
     private boolean isLeaf;
 
 
-    public BTreeNode(BTreeNode parent, int maxNodeSize, long offset){
+    public BTreeNode(long parentAddress, int maxNodeSize, long offset){
         nodeKeys = new TreeObject[maxNodeSize];
-        this.parent = parent;
-        children = new LinkedList<BTreeNode>();
+        this.parentOffset = parentAddress;
 
         // META DATA INSTANTIATION
         isLeaf = true;
         this.offset = offset;
         numKeys = 0;
-        numChildren = 0;
         parentOffset = 0;
+        numChildren = 0;
+        childrenOffsets = new long[maxNodeSize + 1];
     }
 
-    public BTreeNode getChild(int index){
-        return children.get(index);
+    public long getChildOffset(int index){
+        return childrenOffsets[index];
     }
 
     public void insertKey(TreeObject key){
@@ -79,27 +77,39 @@ public class BTreeNode{
         return isLeaf;
     }
 
-    public LinkedList<BTreeNode> getChildren(){
-        return children;
+    public long[] getChildrenOffsets(){
+        return childrenOffsets;
     }
 
     public void setParent(BTreeNode parent){
         this.parent = parent;
     }
 
-    public void addChild(BTreeNode child, int index){
-        children.add(index, child);
-        if (children.size() > 0){
-            isLeaf = false;
+    public void addChildAddress(int index, long offset){
+        for (int i = numChildren; i > index; i--){
+            childrenOffsets[i] = childrenOffsets[i - 1];
         }
+        childrenOffsets[index] = offset;
+        numChildren++;
+    }
+
+    public long removeChildAddress(int index){
+        long retVal = childrenOffsets[index];
+
+        for (int i = index; i < numChildren; i++){
+            childrenOffsets[i] = childrenOffsets[i + 1];
+        }
+        numChildren--;
+
+        return retVal;
     }
 
     public void setLeaf(boolean thisNodeIsALeaf){
         isLeaf = thisNodeIsALeaf;
     }
 
-    public BTreeNode getParent(){
-        return parent;
+    public long getParentAddress(){
+        return parentOffset;
     }
 
     public String toStringForDebug(){
@@ -140,9 +150,5 @@ public class BTreeNode{
 
     public int getNumChildren(){
         return numChildren;
-    }
-
-    public int getParentOffset(){
-        return parentOffset;
     }
 }
