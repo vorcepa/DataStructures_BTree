@@ -57,8 +57,14 @@ public class GeneBankCreateBTree {
         return retVal.toString();
     }
 
-    public static void main(String[] args){
-        TreeObject t = new TreeObject("catg");
-        System.out.println(Long.toBinaryString(t.getSequence()));
+    public static void main(String[] args) throws FileNotFoundException, IOException {
+        RandomAccessFile file = new RandomAccessFile("testFile.txt", "rw");
+        int b = 0;
+        file.write(b);
+        file.write(0);
+        file.write(0);
+        file.write(3);
+        file.seek(0);
+        System.out.println(file.readInt());
     }
 }

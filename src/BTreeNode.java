@@ -1,63 +1,78 @@
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
 public class BTreeNode{
-    private ArrayList<TreeObject> nodeKeys;
+    private TreeObject[] nodeKeys;
     private LinkedList<BTreeNode> children;
     private BTreeNode parent;
+
+    // META DATA
+    private final long offset;
+    private int numKeys;
+    private int numChildren;
+    private int parentOffset;
     private boolean isLeaf;
 
-    public BTreeNode(BTreeNode parent){
-        nodeKeys = new ArrayList<TreeObject>();
+
+    public BTreeNode(BTreeNode parent, int maxNodeSize, long offset){
+        nodeKeys = new TreeObject[maxNodeSize];
         this.parent = parent;
         children = new LinkedList<BTreeNode>();
+
+        // META DATA INSTANTIATION
         isLeaf = true;
+        this.offset = offset;
+        numKeys = 0;
+        numChildren = 0;
+        parentOffset = 0;
     }
-
-    public int getSize(){
-        return nodeKeys.size();
-    }
-
 
     public BTreeNode getChild(int index){
         return children.get(index);
     }
 
-    public int insertKey(TreeObject key){
+    public void insertKey(TreeObject key){
         int insertLocation = -1;
         TreeObject currentKey;
-        for (int i = 0; i < nodeKeys.size(); i++){
-            currentKey = nodeKeys.get(i);
+        for (int i = 0; i < numKeys; i++){
+            currentKey = nodeKeys[i];
             if (key.getSequence() == currentKey.getSequence()){
                 currentKey.incrementDuplicates();
-                return -1;
+                return;
             }
-            if (key.getSequence() < nodeKeys.get(i).getSequence()){
+            if (key.getSequence() < nodeKeys[i].getSequence()){
                 insertLocation = i;
                 break;
             }
         }
+
         if (insertLocation == -1){
-            nodeKeys.add(key);
+            nodeKeys[numKeys] = key;
         }
         else {
-            nodeKeys.add(insertLocation, key);
-            insertLocation = nodeKeys.size();
+            for (int j = numKeys; j > insertLocation; j--){
+                nodeKeys[j] = nodeKeys[j - 1];
+            }
+            nodeKeys[insertLocation] = key;
         }
-
-        return insertLocation;
+        numKeys++;
     }
 
     public TreeObject getKey(int index){
-        if (nodeKeys.size() == 0){
+        if (nodeKeys.length == 0){
             throw new NoSuchElementException();
         }
-        return nodeKeys.get(index);
+
+        return nodeKeys[index];
     }
 
     public TreeObject removeKey(int index){
-        return nodeKeys.remove(index);
+        TreeObject retVal = nodeKeys[index];
+        for (int i = index; i < numKeys - 2; i++){
+            nodeKeys[i] = nodeKeys[i + 1];
+        }
+        numKeys--;
+        return retVal;
     }
 
     public boolean isLeaf(){
@@ -90,8 +105,8 @@ public class BTreeNode{
     public String toStringForDebug(){
         StringBuilder retVal = new StringBuilder();
         retVal.append("[");
-        for (int i = 0; i < nodeKeys.size(); i++){
-            retVal.append(nodeKeys.get(i).toString());
+        for (int i = 0; i < numKeys; i++){
+            retVal.append(nodeKeys[i].toString());
             retVal.append(", ");
         }
 
@@ -105,13 +120,29 @@ public class BTreeNode{
     public boolean checkForDuplicates(TreeObject key){
         boolean retVal = false;
         TreeObject currentKey;
-        for (int i = 0; i < nodeKeys.size(); i++){
-            currentKey = nodeKeys.get(i);
+        for (int i = 0; i < numKeys; i++){
+            currentKey = nodeKeys[i];
             if (key.getSequence() == currentKey.getSequence()){
                 retVal = true;
                 currentKey.incrementDuplicates();
             }
         }
         return retVal;
+    }
+
+    public long getOffset(){
+        return offset;
+    }
+
+    public int getNumKeys(){
+        return numKeys;
+    }
+
+    public int getNumChildren(){
+        return numChildren;
+    }
+
+    public int getParentOffset(){
+        return parentOffset;
     }
 }
