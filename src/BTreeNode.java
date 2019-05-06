@@ -6,7 +6,7 @@ public class BTreeNode{
     private long parentOffset;
 
     // META DATA
-    private final long offset;
+    private long offset;
     private int numKeys;
     private int numChildren;
     private boolean isLeaf;
@@ -23,6 +23,25 @@ public class BTreeNode{
         parentOffset = 0;
         numChildren = 0;
         childrenOffsets = new long[maxNodeSize + 1];
+    }
+
+    public BTreeNode(int maxNodeSize, long offset, int numKeys, int numChildren, long parentOffset,
+                     boolean isLeaf, TreeObject[] keys, long[] childrenOffsets){
+        this.offset = offset;
+        this.numKeys = numKeys;
+        this.numChildren = numChildren;
+        this.parentOffset = parentOffset;
+        this.isLeaf = isLeaf;
+
+        nodeKeys = new TreeObject[maxNodeSize];
+        for (int i = 0; i < keys.length; i++){
+            nodeKeys[i] = keys[i];
+        }
+
+        this.childrenOffsets = new long[maxNodeSize];
+        for (int j = 0; j < childrenOffsets.length; j++){
+            this.childrenOffsets[j] = childrenOffsets[j];
+        }
     }
 
     public long getChildOffset(int index){
@@ -81,8 +100,8 @@ public class BTreeNode{
         return childrenOffsets;
     }
 
-    public void setParent(BTreeNode parent){
-        this.parent = parent;
+    public void setParentOffset(long offset){
+        this.parentOffset = offset;
     }
 
     public void addChildAddress(int index, long offset){
