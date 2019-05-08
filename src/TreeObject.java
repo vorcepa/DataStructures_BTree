@@ -17,7 +17,7 @@ public class TreeObject{
 
     private String buildCharacterSequence(long sequence, int sequenceLength){
         StringBuilder retVal = new StringBuilder();
-        while (sequenceLength > -1){
+        while (sequenceLength > 0){
             if ((sequence & 0b11) == 0b11){
                 retVal.append('t');
             }

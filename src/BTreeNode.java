@@ -170,4 +170,8 @@ public class BTreeNode{
     public int getNumChildren(){
         return numChildren;
     }
+
+    public void setOffset(long newOffset){
+        this.offset = newOffset;
+    }
 }
