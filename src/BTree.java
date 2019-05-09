@@ -10,8 +10,9 @@ public class BTree {
     private final int sequenceLength;
     private RandomAccessFile rawBTreeDataFile;
     private long currentCursorPosition;
+    private Cache treeCache;
 
-    public BTree(int degree, int sequenceLength, RandomAccessFile file, boolean canWrite){
+    public BTree(int degree, int sequenceLength, RandomAccessFile file, boolean canWrite, int cacheSize){
         this.degree = degree;
         maxNodeSize = 2*degree - 1;
         rawBTreeDataFile = file;
@@ -23,6 +24,8 @@ public class BTree {
         if (canWrite) {
             diskWrite(root);
         }
+
+        treeCache = new Cache(cacheSize);
     }
 
     public void insert(BTree tree, TreeObject key){ // tree T, key k
@@ -153,8 +156,11 @@ public class BTree {
         this.root = newRoot;
     }
 
+    @SuppressWarnings("unchecked")
     private void diskWrite(BTreeNode node){
         try{
+
+            treeCache.addObject(node);
             currentCursorPosition = node.getOffset();
             rawBTreeDataFile.seek(currentCursorPosition);
 
@@ -197,6 +203,8 @@ public class BTree {
 
     public BTreeNode diskRead(long address){
         BTreeNode retVal;
+        retVal = treeCache.getObject()
+
         currentCursorPosition = address;
 
         try {

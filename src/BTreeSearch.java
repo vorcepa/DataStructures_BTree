@@ -38,7 +38,6 @@ public class BTreeSearch {
         for (int i = 0; i < node.getNumKeys(); i++){
             if (key.getSequence() < node.getKey(i).getSequence()){
                 long childOffset = node.getChildOffset(i);
-                System.out.println("Child: " + i);
                 retVal = tree.diskRead(childOffset);
                 break;
             }
@@ -46,7 +45,6 @@ public class BTreeSearch {
 
         if (retVal == null){
             long childOffset = node.getChildOffset(node.getNumChildren() - 1);
-            System.out.println("Child: " + (node.getNumChildren() - 1));
             retVal = tree.diskRead(childOffset);
         }
 
