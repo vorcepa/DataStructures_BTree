@@ -1,6 +1,48 @@
-This is my attempt at the BTree project assigned by Professor Yeh at
-Boise State University, Spring 2019.  Included in a sub-directory is
-a project from a previous class where we built a Doubly-Linked List (DLL) class.
-To test test the DLL class, we were provided a test class, that we then wrote
-unit tests for.  This has been my guide for setting up a testing class for the
-BTree project.
+*****************************************************************************************************************
+CS321 Data Structures: lab4 - Bioinformatics
+
+May 9th, 2019
+
+	Phillip Vorce 
+	Jonathan McLeod
+	Jared Lytle
+******************************************************************************************************************
+
+Files:
+
+	Btree.java: An implementation of a BTree for GeneBanks.
+	
+	BTreeNode: Creation of BTreeNodes used by BTree class.
+	
+	TreeObject.java: Object class used by BTree class.
+	
+	GeneBankconvert.java: Represents Gene Sequences.
+	
+	GeneBankCreateBTree.java: Creates the BTree for the GeneBank with all the Gene Sequences.
+	
+	GeneBankSearch.java: Searches the BTree and prints the frequency of each Gene Sequence found.
+	
+	README: This file.
+	
+
+
+Compile the program using:
+	$ javac *.java
+
+Run the program using:
+
+	GeneBankCreateBTree.java:
+		$ java GeneBankCreateBTree <cache> <degree> <gbk file> <sequence length> [<cache size>] [<debug level>]
+		
+		
+	**GeneBankCreateBTree must be run first, as a BTree file is a require argument for GeneBankSearch**	
+	GeneBankSearch.java:
+		$ java GeneBankSearch <cache> <btree file> <query file> [<cache size>] [<debug level>]
+
+
+BTree File Structure:
+
+Our BTree file has an initial portion of metadata that encapsulates the first 32 bits of the tree. Here the degree of the tree 
+and sequence length are stored.After this every node is written the exact same. The first bit is the leaf boolean bit, the next 
+sixteen bits are a representation of the number of objects parameter, the next section of bits(varies by tree degree) are the 
+keys and their associated frequency, and finally the next section of bits are the child pointers.
