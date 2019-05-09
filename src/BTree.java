@@ -21,22 +21,30 @@ public class BTree {
     }
 
     public void insert(BTree tree, TreeObject key){ // tree T, key k
-        BTreeNode treeRoot = root;
-        if (treeRoot.getNumKeys() >= maxNodeSize){
-            BTreeNode parentForSplit = new BTreeNode(root.getParentAddress(), maxNodeSize, currentCursorPosition);
-            tree.setRoot(parentForSplit);
-            parentForSplit.setLeaf(false);
-            parentForSplit.addChildAddress(0, currentCursorPosition);
-            treeRoot.setParentOffset(parentForSplit.getOffset());
-            splitChild(parentForSplit, 0, treeRoot);
-            if (parentForSplit.checkForDuplicates(key)){
-                return;
-            }
+        try {
+            BTreeNode treeRoot = root;
+            if (treeRoot.getNumKeys() >= maxNodeSize) {
+                currentCursorPosition = rawBTreeDataFile.length();
+                BTreeNode parentForSplit = new BTreeNode(root.getParentAddress(), maxNodeSize, 0);
+                tree.setRoot(parentForSplit);
+                parentForSplit.setLeaf(false);
+                treeRoot.setOffset(currentCursorPosition);
+                parentForSplit.addChildAddress(0, treeRoot.getOffset());
+                treeRoot.setParentOffset(parentForSplit.getOffset());
 
-            insertNonFull(parentForSplit, key);
+                splitChild(parentForSplit, 0, treeRoot);
+                if (parentForSplit.checkForDuplicates(key)) {
+                    return;
+                }
+
+                insertNonFull(parentForSplit, key);
+            } else {
+                insertNonFull(treeRoot, key);
+            }
         }
-        else{
-            insertNonFull(treeRoot, key);
+        catch (IOException e){
+            e.printStackTrace();
+            System.exit(-1);
         }
     }
 
@@ -116,12 +124,6 @@ public class BTree {
                 }
             }
 
-            if (parentNode == root) {
-                long tempOffset = parentNode.getOffset();
-                parentNode.setOffset(childToSplit.getOffset());
-                childToSplit.setOffset(tempOffset);
-            }
-
             parentNode.insertKey(childToSplit.removeKey(childToSplit.getNumKeys() - 1));
 
             diskWrite(childToSplit);
@@ -170,11 +172,11 @@ public class BTree {
             }
 
             for (int j = 0; j < maxNodeSize + 1; j++){
-                if (j < node.getChildrenOffsets().length){
+                if (j < node.getNumChildren()){
                     rawBTreeDataFile.writeLong(node.getChildOffset(j));
                 }
                 else {
-                    rawBTreeDataFile.writeInt(0);
+                    rawBTreeDataFile.writeLong(0);
                 }
             }
 

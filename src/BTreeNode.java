@@ -38,7 +38,7 @@ public class BTreeNode{
             nodeKeys[i] = keys[i];
         }
 
-        this.childrenOffsets = new long[maxNodeSize];
+        this.childrenOffsets = new long[maxNodeSize + 1];
         for (int j = 0; j < childrenOffsets.length; j++){
             this.childrenOffsets[j] = childrenOffsets[j];
         }
@@ -115,7 +115,7 @@ public class BTreeNode{
     public long removeChildAddress(int index){
         long retVal = childrenOffsets[index];
 
-        for (int i = index; i < numChildren; i++){
+        for (int i = index; i < numChildren - 1; i++){
             childrenOffsets[i] = childrenOffsets[i + 1];
         }
         numChildren--;
