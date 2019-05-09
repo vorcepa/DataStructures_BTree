@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.ListIterator;
 
 /**
  * This Cache class implements a LinkedList to simulate a computer's cache.
@@ -9,8 +10,8 @@ import java.util.LinkedList;
  * @author Phillip Vorce
  * @version Spring 2019
  */
-public class Cache<T>{
-    private LinkedList<T> cacheStorage;
+public class Cache{
+    private LinkedList<BTreeNode> cacheStorage;
     private int cacheSize;
 
     /**
@@ -19,7 +20,7 @@ public class Cache<T>{
      *                  removing the oldest and least-used item as more items are added.
      */
     public Cache(int cacheSize){
-        cacheStorage = new LinkedList<T>();
+        cacheStorage = new LinkedList<BTreeNode>();
         this.cacheSize = cacheSize;
     }
 
@@ -28,13 +29,17 @@ public class Cache<T>{
      * @param item any generic item to be checked to see if its in the cache
      * @return the item that was sent, if it was found in the cache.  Null otherwise
      */
-    public T getObject(T item){
-        if (cacheStorage.contains(item)){
-            return cacheStorage.get(cacheStorage.indexOf(item));
+    public BTreeNode getObject(long offset){
+        ListIterator iter = cacheStorage.listIterator();
+        BTreeNode currentNode;
+        while (iter.hasNext()){
+            currentNode = (BTreeNode) iter.next();
+            if (offset == currentNode.getOffset()){
+                return currentNode;
+            }
         }
-        else{
-            return null;
-        }
+
+        return null;
     }
 
     /**
@@ -42,8 +47,8 @@ public class Cache<T>{
      * the oldest item is removed from the end of the list.
      * @param item any generic item to be added to the cache
      */
-    public void addObject(T item){
-        cacheStorage.addFirst(item);
+    public void addObject(BTreeNode node){
+        cacheStorage.addFirst(node);
         if (cacheStorage.size() > cacheSize){
             cacheStorage.removeLast();
         }
@@ -53,8 +58,8 @@ public class Cache<T>{
      * Removes the sent item from the cache
      * @param item the item to be removed from the cache
      */
-    public void removeObject(T item){
-        cacheStorage.remove(item);
+    public void removeObject(BTreeNode node){
+        cacheStorage.remove(node);
     }
 
     /**

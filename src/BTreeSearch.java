@@ -5,7 +5,7 @@ public class BTreeSearch {
     public static void main(String[] args){
         try {
             RandomAccessFile file = new RandomAccessFile("testFile.txt", "r");
-            BTree tree = new BTree(2, 4, file, false);
+            BTree tree = new BTree(2, 4, file, false, 0);
             BTreeNode currentNode = tree.diskRead(0);
             TreeObject currentKey = new TreeObject("caca");
 

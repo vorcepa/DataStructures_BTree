@@ -20,12 +20,13 @@ public class BTree {
 
         currentCursorPosition = 0;
         root = new BTreeNode(0, maxNodeSize, currentCursorPosition);
+        treeCache = new Cache(cacheSize);
 
         if (canWrite) {
             diskWrite(root);
         }
 
-        treeCache = new Cache(cacheSize);
+
     }
 
     public void insert(BTree tree, TreeObject key){ // tree T, key k
@@ -159,7 +160,6 @@ public class BTree {
     @SuppressWarnings("unchecked")
     private void diskWrite(BTreeNode node){
         try{
-
             treeCache.addObject(node);
             currentCursorPosition = node.getOffset();
             rawBTreeDataFile.seek(currentCursorPosition);
@@ -203,7 +203,10 @@ public class BTree {
 
     public BTreeNode diskRead(long address){
         BTreeNode retVal;
-        retVal = treeCache.getObject()
+        retVal = treeCache.getObject(address);
+        if (retVal != null){
+            return retVal;
+        }
 
         currentCursorPosition = address;
 

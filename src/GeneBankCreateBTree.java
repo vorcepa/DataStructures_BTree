@@ -133,11 +133,14 @@ public class GeneBankCreateBTree {
         }
 
         int sequenceLength = Integer.parseInt(args[3]);
-
+        int cacheSize = 0;
         binaryFileName = args[2] + ".btree.data." + sequenceLength + "." + degree;
 
         if ((args.length == 5 || args.length == 6) && args[0].equals("1") && Integer.parseInt(args[4]) < 20){
             System.out.println("Please specify a cache of at least 20");
+        }
+        else{
+            cacheSize = Integer.parseInt(args[4]);
         }
 
         int debugLevel = 0;
@@ -166,7 +169,7 @@ public class GeneBankCreateBTree {
             file.delete();
         }
         RandomAccessFile fileRAF = new RandomAccessFile(binaryFileName, "rw");
-        BTree tree = new BTree(degree, sequenceLength, fileRAF, true);
+        BTree tree = new BTree(degree, sequenceLength, fileRAF, true, cacheSize);
         tree = readGeneBankFile(DNAfile, sequenceLength, tree);
 
         if (debugLevel == 1) {
