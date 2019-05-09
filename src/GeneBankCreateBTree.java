@@ -1,3 +1,4 @@
+import javax.naming.InvalidNameException;
 import java.io.*;
 import java.util.ArrayList;
 
@@ -63,27 +64,121 @@ public class GeneBankCreateBTree {
         return retVal;
     }
 
+    private static void printUsage(){
+        System.out.println("Usage: java GeneBankCreateBTree <0/1(no/with Cache)> <degree> <gbk file> <sequence length> [<cache size>] [<debug level>]");
+        System.exit(-1);
+    }
+
+    private static void verifyArguments(String[] args){
+        if (args.length < 4 || args.length > 6){
+            printUsage();
+        }
+
+        if (!args[0].equals("0") && !args[0].equals("1")){
+            System.out.println("First argument (no cache/cache) must be 0 or 1");
+            printUsage();
+        }
+
+        try{
+            int degree = Integer.parseInt(args[1]);
+            if (degree < 0){
+                System.out.println("Degree of BTree (second argument) must be a non-negative integer.");
+                printUsage();
+            }
+        }
+        catch (NumberFormatException e){
+            System.out.println("Degree of BTree (second argument) must be a non-negative integer.");
+            printUsage();
+        }
+
+        try{
+            File file = new File(args[2]);
+            if (!file.exists()){
+                throw new FileNotFoundException(file.getAbsolutePath());
+            }
+        }
+        catch (FileNotFoundException e){
+            System.out.println("File not found for gbk file.");
+            printUsage();
+        }
+
+        try{
+            int sequenceLength = Integer.parseInt(args[3]);
+            if (sequenceLength < 1 || sequenceLength > 31){
+                System.out.println("Sequence length (4th argument) must be between 1 and 31 (inclusive)");
+                printUsage();
+            }
+        }
+        catch (NumberFormatException e){
+            System.out.println("Invalid integer for sequence length (4th argument).  Sequence length must be an integer between 1 and 31 (inclusive)");
+            printUsage();
+        }
+
+
+    }
+
     public static void main(String[] args) throws IOException {
-        File file = new File("testFile.txt");
+        verifyArguments(args);
+        File DNAfile = new File(args[2]);
+
+        String binaryFileName;
+
+        int degree;
+        int tempDegree = Integer.parseInt(args[1]);
+        if (tempDegree == 0){
+            degree = 12;
+        }
+        else{
+            degree = tempDegree;
+        }
+
+        int sequenceLength = Integer.parseInt(args[3]);
+
+        binaryFileName = args[2] + ".btree.data." + sequenceLength + "." + degree;
+
+        if ((args.length == 5 || args.length == 6) && args[0].equals("1") && Integer.parseInt(args[4]) < 20){
+            System.out.println("Please specify a cache of at least 20");
+        }
+
+        int debugLevel = 0;
+        try{
+            if (args.length == 5 && args[0].equals("0")){
+                debugLevel = Integer.parseInt(args[4]);
+                if (debugLevel != 0 && debugLevel != 1){
+                    throw new NumberFormatException();
+                }
+            }
+
+            if (args.length == 6){
+                debugLevel = Integer.parseInt(args[5]);
+                if (debugLevel != 0 && debugLevel != 1){
+                    throw new NumberFormatException();
+                }
+            }
+        }
+        catch (NumberFormatException e){
+            System.out.println("Debug level (5th argument) must be an intger (0 or 1, only)");
+            printUsage();
+        }
+
+        File file = new File(binaryFileName);
         if (file.exists()){
             file.delete();
         }
-
-        File DNAfile = new File("test3.gbk");
-
-        RandomAccessFile fileRAF = new RandomAccessFile("testFile.txt", "rw");
-        int sequenceLength = 7;
-        BTree tree = new BTree(3, sequenceLength, fileRAF, true);
+        RandomAccessFile fileRAF = new RandomAccessFile(binaryFileName, "rw");
+        BTree tree = new BTree(degree, sequenceLength, fileRAF, true);
         tree = readGeneBankFile(DNAfile, sequenceLength, tree);
 
-
-        File dumpFile = new File("dumpTest2.txt");
-        if (dumpFile.exists()){
-            dumpFile.delete();
+        if (debugLevel == 1) {
+            String dumpFileName = args[2] + ".btree.dump." + sequenceLength;
+            File dumpFile = new File(dumpFileName);
+            if (dumpFile.exists()) {
+                dumpFile.delete();
+            }
+            dumpFile.createNewFile();
+            FileWriter fw = new FileWriter(dumpFile);
+            tree.writeDump(fw, tree.getRoot());
+            fw.close();
         }
-        dumpFile.createNewFile();
-        FileWriter fw = new FileWriter(dumpFile);
-        tree.writeDump(fw, tree.getRoot());
-        fw.close();
     }
 }
