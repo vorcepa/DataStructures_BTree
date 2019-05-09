@@ -1,5 +1,9 @@
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+
 
 public class BTree {
     private BTreeNode root;
@@ -9,7 +13,7 @@ public class BTree {
     private RandomAccessFile rawBTreeDataFile;
     private long currentCursorPosition;
 
-    public BTree(int degree, int sequenceLength, RandomAccessFile file){
+    public BTree(int degree, int sequenceLength, RandomAccessFile file, boolean canWrite){
         this.degree = degree;
         maxNodeSize = 2*degree - 1;
         rawBTreeDataFile = file;
@@ -17,7 +21,10 @@ public class BTree {
 
         currentCursorPosition = 0;
         root = new BTreeNode(0, maxNodeSize, currentCursorPosition);
-        diskWrite(root);
+
+        if (canWrite) {
+            diskWrite(root);
+        }
     }
 
     public void insert(BTree tree, TreeObject key){ // tree T, key k
@@ -33,10 +40,6 @@ public class BTree {
                 treeRoot.setParentOffset(parentForSplit.getOffset());
 
                 splitChild(parentForSplit, 0, treeRoot);
-                if (parentForSplit.checkForDuplicates(key)) {
-                    return;
-                }
-
                 insertNonFull(parentForSplit, key);
             } else {
                 insertNonFull(treeRoot, key);
@@ -50,47 +53,43 @@ public class BTree {
 
     private void insertNonFull(BTreeNode node, TreeObject key){
         if (node.checkForDuplicates(key)){
-            return;
-        }
-        if (node.isLeaf()){
-            node.insertKey(key);
+            node.getKey(key).incrementDuplicates();
             diskWrite(node);
         }
-        else{
-            int insertLocation = node.getNumKeys() + 1;
-            for (int i = node.getNumKeys() - 1; i >= 0; i--){
-                if (key.getSequence() > node.getKey(i).getSequence()){
-                    insertLocation = i + 1;
-                    break;
+        else {
+            if (node.isLeaf()) {
+                node.insertKey(key);
+                diskWrite(node);
+            } else {
+                int insertLocation = node.getNumKeys() + 1;
+                for (int i = node.getNumKeys() - 1; i >= 0; i--) {
+                    if (key.getSequence() > node.getKey(i).getSequence()) {
+                        insertLocation = i + 1;
+                        break;
+                    }
                 }
-            }
 
-            long childOffset;
-            BTreeNode nextChild;
-            if (insertLocation == node.getNumKeys() + 1){
-                childOffset = node.getChildOffset(0);
-                nextChild = diskRead(childOffset);
-                if (nextChild.getNumKeys() >= maxNodeSize){
-                    splitChild(node, 0, nextChild);
-                    if (node.checkForDuplicates(key)){
-                        return;
+                long childOffset;
+                BTreeNode nextChild;
+                if (insertLocation == node.getNumKeys() + 1) {
+                    childOffset = node.getChildOffset(0);
+                    nextChild = diskRead(childOffset);
+                    if (nextChild.getNumKeys() >= maxNodeSize) {
+                        splitChild(node, 0, nextChild);
+                        insertNonFull(node, key);
+                    } else {
+                        insertNonFull(nextChild, key);
                     }
-                    insertNonFull(node, key);
-                }
-                else {
-                    insertNonFull(nextChild, key);
-                }
-            }
-            else{
-                childOffset = node.getChildOffset(insertLocation);
-                nextChild = diskRead(childOffset);
-                if (nextChild.getNumKeys() >= maxNodeSize){
-                    splitChild(node, insertLocation, nextChild);
-                    if (node.checkForDuplicates(key)){
-                        return;
+                } else {
+                    childOffset = node.getChildOffset(insertLocation);
+                    nextChild = diskRead(childOffset);
+                    if (nextChild.getNumKeys() >= maxNodeSize) {
+                        splitChild(node, insertLocation, nextChild);
+                        insertNonFull(node, key);
+                    } else {
+                        insertNonFull(nextChild, key);
                     }
                 }
-                insertNonFull(nextChild, key);
             }
         }
 
@@ -98,6 +97,8 @@ public class BTree {
 
     private void splitChild(BTreeNode parentNode, int childIndex, BTreeNode childToSplit) {
         try {
+            childToSplit.setParentOffset(parentNode.getOffset());
+            currentCursorPosition = rawBTreeDataFile.length();
             BTreeNode otherChild = new BTreeNode(parentNode.getOffset(), maxNodeSize, currentCursorPosition); // z = allocate-node()
             otherChild.setLeaf(childToSplit.isLeaf());
 
@@ -110,18 +111,11 @@ public class BTree {
             if (!childToSplit.isLeaf()) {
                 // move children addresses to other child
                 int j = 0;
-                for (int i = childToSplit.getNumChildren() - 1; i > start - 1; i--) {
-                    otherChild.addChildAddress(j, childToSplit.removeChildAddress(childToSplit.getNumChildren() - 1));
+                for (int i = childToSplit.getNumChildren() - 1; i >= childToSplit.getNumKeys(); i--) {
+                    otherChild.addChildAddress(j, childToSplit.removeChildAddress(start));
                     j++;
                 }
-                // update parent pointers in all children that have a new parent
-                // requires disk-read
 
-                BTreeNode otherChildCurrentChild;
-                for (int k = 0; k < otherChild.getNumChildren(); k++) {
-                    otherChildCurrentChild = diskRead(otherChild.getChildOffset(k));
-                    otherChildCurrentChild.setParentOffset(otherChild.getOffset());
-                }
             }
 
             parentNode.insertKey(childToSplit.removeKey(childToSplit.getNumKeys() - 1));
@@ -132,8 +126,23 @@ public class BTree {
 
 
             diskWrite(parentNode);
+            if (!childToSplit.isLeaf()){
+                // update parent pointers in all children that have a new parent
+                // requires disk-read
 
+                BTreeNode otherChildCurrentChild;
+                BTreeNode splitChildCurrentChild;
+                for (int k = 0; k < childToSplit.getNumChildren(); k++) {
+                    otherChildCurrentChild = diskRead(otherChild.getChildOffset(k));
+                    otherChildCurrentChild.setParentOffset(otherChild.getOffset());
 
+                    splitChildCurrentChild = diskRead(childToSplit.getChildOffset(k));
+                    splitChildCurrentChild.setParentOffset(childToSplit.getOffset());
+
+                    diskWrite(otherChildCurrentChild);
+                    diskWrite(splitChildCurrentChild);
+                }
+            }
             diskWrite(otherChild);
         }
         catch (IOException e){
@@ -151,7 +160,6 @@ public class BTree {
             currentCursorPosition = node.getOffset();
             rawBTreeDataFile.seek(currentCursorPosition);
 
-            System.out.println("Cursor Pos: " + currentCursorPosition);
             // META DATA
             rawBTreeDataFile.writeLong(node.getOffset()); // write offset address
             rawBTreeDataFile.writeInt(node.getNumKeys()); // write number of keys in node
@@ -182,7 +190,6 @@ public class BTree {
 
             rawBTreeDataFile.seek(rawBTreeDataFile.length());
             currentCursorPosition = rawBTreeDataFile.getFilePointer();
-            System.out.println("Cursor Pos: " + currentCursorPosition);
         }
         catch (IOException e){
             e.printStackTrace();
@@ -190,7 +197,7 @@ public class BTree {
         }
     }
 
-    private BTreeNode diskRead(long address){
+    public BTreeNode diskRead(long address){
         BTreeNode retVal;
         currentCursorPosition = address;
 
@@ -221,7 +228,7 @@ public class BTree {
 
             // read children offsets
             long[] childOffsets = new long[numChildren];
-            for (int j = 0; j < maxNodeSize; j++){
+            for (int j = 0; j < maxNodeSize + 1; j++){
                 if (j < numChildren) {
                     childOffsets[j] = rawBTreeDataFile.readLong();
                 }
@@ -246,16 +253,27 @@ public class BTree {
         return null;
     }
 
-    public BTreeNode getNode(int whichNode){
-        if (whichNode == 0)
-            return diskRead(0);
-        else if (whichNode == 1){
-            return diskRead(93);
+    public void writeDump(FileWriter fw, BTreeNode node) throws IOException{
+        if (node.isLeaf()){
+            for (int i = 0; i < node.getNumKeys(); i++){
+                fw.write(node.getKey(i).toString() + ": " + node.getKey(i).getDuplicates() + "\n");
+            }
         }
-        else if (whichNode == 2){
-            return diskRead(186);
+        else{
+            int j = 0;
+            BTreeNode child = diskRead(node.getChildOffset(j));
+            writeDump(fw, child);
+            for (; j < node.getNumKeys(); j++){
+                fw.write(node.getKey(j).toString() + ": " + node.getKey(j).getDuplicates() + "\n");
+                child = diskRead(node.getChildOffset(j + 1));
+                writeDump(fw, child);
+            }
         }
-
-        return null;
     }
+
+    public BTreeNode getRoot(){
+        diskWrite(root);
+        return root;
+    }
+
 }

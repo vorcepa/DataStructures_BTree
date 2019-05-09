@@ -1,15 +1,17 @@
 import java.io.*;
+import java.util.ArrayList;
 
 public class GeneBankCreateBTree {
-    public String readGeneBankFile(File file, int sequenceSize) throws IOException {
+    public static BTree readGeneBankFile(File DNAfile, int sequenceSize, BTree tree) throws IOException {
         boolean readingDNAChars = false;
 
-        StringBuilder retVal = new StringBuilder();
-        InputStream fileStream = new FileInputStream(file);
+        InputStream fileStream = new FileInputStream(DNAfile);
         BufferedReader reader = new BufferedReader(new InputStreamReader(fileStream));
 
         String currentLine = reader.readLine();
         String nextLine;
+
+
         while(currentLine != null) {
             if (currentLine.contains("ORIGIN")){
                 currentLine = reader.readLine();
@@ -21,21 +23,25 @@ public class GeneBankCreateBTree {
             nextLine = reader.readLine();
 
             if (readingDNAChars){
-                retVal.append(generateKeys(sequenceSize, currentLine, nextLine));
+                ArrayList<TreeObject> nextSequences = generateKeys(sequenceSize, currentLine, nextLine);
+                for (int i = 0; i < nextSequences.size(); i++){
+                    tree.insert(tree, nextSequences.get(i));
+                }
+
             }
 
             currentLine = nextLine;
         }
         reader.close();
 
-        return retVal.toString();
+        return tree;
     }
 
-    public String generateKeys(int sequenceSize, String currentLine, String nextLine){
+    public static ArrayList<TreeObject> generateKeys(int sequenceSize, String currentLine, String nextLine){
         currentLine = currentLine.replaceAll("\\s+|\\d", "");
         nextLine = nextLine.replaceAll("\\s+|\\d", "");
         String sequence;
-        StringBuilder retVal = new StringBuilder();
+        ArrayList<TreeObject> retVal = new ArrayList<TreeObject>();
 
         for (int i = 0; i < currentLine.length(); i++){
             if ((i + sequenceSize) > currentLine.length()){
@@ -50,21 +56,34 @@ public class GeneBankCreateBTree {
             }
 
             if (!sequence.contains("n")) {
-                retVal.append(sequence);
+                retVal.add(new TreeObject(sequence));
             }
         }
 
-        return retVal.toString();
+        return retVal;
     }
 
-    public static void main(String[] args) throws FileNotFoundException, IOException {
-        RandomAccessFile file = new RandomAccessFile("testFile.txt", "rw");
-        int b = 0;
-        file.write(b);
-        file.write(0);
-        file.write(0);
-        file.write(3);
-        file.seek(0);
-        System.out.println(file.readInt());
+    public static void main(String[] args) throws IOException {
+        File file = new File("testFile.txt");
+        if (file.exists()){
+            file.delete();
+        }
+
+        File DNAfile = new File("test3.gbk");
+
+        RandomAccessFile fileRAF = new RandomAccessFile("testFile.txt", "rw");
+        int sequenceLength = 7;
+        BTree tree = new BTree(3, sequenceLength, fileRAF, true);
+        tree = readGeneBankFile(DNAfile, sequenceLength, tree);
+
+
+        File dumpFile = new File("dumpTest2.txt");
+        if (dumpFile.exists()){
+            dumpFile.delete();
+        }
+        dumpFile.createNewFile();
+        FileWriter fw = new FileWriter(dumpFile);
+        tree.writeDump(fw, tree.getRoot());
+        fw.close();
     }
 }

@@ -20,7 +20,6 @@ public class BTreeNode{
         isLeaf = true;
         this.offset = offset;
         numKeys = 0;
-        parentOffset = 0;
         numChildren = 0;
         childrenOffsets = new long[maxNodeSize + 1];
     }
@@ -45,6 +44,9 @@ public class BTreeNode{
     }
 
     public long getChildOffset(int index){
+        if (index < 0 || index >= numChildren){
+            throw new IndexOutOfBoundsException();
+        }
         return childrenOffsets[index];
     }
 
@@ -85,7 +87,7 @@ public class BTreeNode{
 
     public TreeObject removeKey(int index){
         TreeObject retVal = nodeKeys[index];
-        for (int i = index; i < numKeys - 2; i++){
+        for (int i = index; i < nodeKeys.length - 1; i++){
             nodeKeys[i] = nodeKeys[i + 1];
         }
         numKeys--;
@@ -93,6 +95,9 @@ public class BTreeNode{
     }
 
     public boolean isLeaf(){
+        if (numChildren != 0){
+            isLeaf = false;
+        }
         return isLeaf;
     }
 
@@ -153,7 +158,6 @@ public class BTreeNode{
             currentKey = nodeKeys[i];
             if (key.getSequence() == currentKey.getSequence()){
                 retVal = true;
-                currentKey.incrementDuplicates();
             }
         }
         return retVal;
@@ -173,5 +177,30 @@ public class BTreeNode{
 
     public void setOffset(long newOffset){
         this.offset = newOffset;
+    }
+
+    public boolean contains(TreeObject key){
+        for (int i = 0; i < numKeys; i++){
+            if (key.getSequence() == nodeKeys[i].getSequence()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public TreeObject getKey(TreeObject key){
+        TreeObject retVal = null;
+        for (int i = 0; i < numKeys; i++){
+            if (key.getSequence() == nodeKeys[i].getSequence()){
+                retVal = nodeKeys[i];
+            }
+        }
+
+        if (retVal == null){
+            throw new NoSuchElementException();
+        }
+
+        return retVal;
+
     }
 }

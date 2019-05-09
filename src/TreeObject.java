@@ -6,7 +6,7 @@ public class TreeObject{
     public TreeObject(String sequence){
         characterSequence = sequence;
         binarySequence = buildBinarySequence(sequence);
-        duplicates = 0;
+        duplicates = 1;
     }
 
     public TreeObject(long sequence, int duplicates, int sequenceLength){
@@ -84,19 +84,5 @@ public class TreeObject{
 
     public String toString(){
         return characterSequence;
-    }
-
-    public String binaryToString(){
-        StringBuilder retVal = new StringBuilder();
-        for (int i = 0; i < characterSequence.length(); i++){
-            if (characterSequence.charAt(i) == 'a'){
-                retVal.append("00");
-            }
-            else{
-                break;
-            }
-        }
-
-        return retVal.toString() + Long.toBinaryString(binarySequence);
     }
 }
